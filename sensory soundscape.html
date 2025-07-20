@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Sensory Soundscape</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Basic CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Prevent scrollbars */
+            background-color: #1a1a2e; /* Dark, calming background */
+            font-family: 'Inter', sans-serif;
+            color: #e0e0e0;
+        }
+
+        /* Canvas Styling */
+        #soundscape-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        /* Info Box Styling */
+        .info-box {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(40, 40, 70, 0.7);
+            padding: 15px;
+            border-radius: 12px;
+            max-width: 300px;
+            font-size: 14px;
+            line-height: 1.5;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 10;
+        }
+
+        /* Settings Panel Styling */
+        #settings-panel {
+            position: absolute;
+            top: 20px;
+            right: -300px; /* Start off-screen */
+            width: 280px;
+            background-color: rgba(40, 40, 70, 0.85);
+            padding: 20px;
+            border-radius: 12px 0 0 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: right 0.4s ease-in-out;
+            z-index: 20;
+        }
+
+        #settings-panel.open {
+            right: 0;
+        }
+
+        #settings-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background-color: rgba(40, 40, 70, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+        }
+        
+        /* Simple toggle switch styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .switch input { display: none; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #4a4a6a;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #4ecca3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="soundscape-canvas"></canvas>
+
+    <div class="info-box">
+        <h1 class="text-lg font-bold text-white mb-2">Sensory Soundscape</h1>
+        <p>A calm space for play. Interact by clicking, tapping, hovering, or using your keyboard. Open the settings to customize your experience.</p>
+    </div>
+
+    <!-- Settings Toggle Button -->
+    <button id="settings-toggle" aria-label="Toggle Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+    </button>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel">
+        <h2 class="text-xl font-bold text-white mb-6">Settings</h2>
+        <div class="space-y-5">
+            <div class="flex items-center justify-between">
+                <label for="hover-mode-toggle" class="font-medium">Hover Mode</label>
+                <label class="switch">
+                    <input type="checkbox" id="hover-mode-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="flex items-center justify-between">
+                <label for="trails-toggle" class="font-medium">Visual Trails</label>
+                <label class="switch">
+                    <input type="checkbox" id="trails-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+
+    <script>
+        // --- DOM ELEMENTS ---
+        const canvas = document.getElementById('soundscape-canvas');
+        const settingsPanel = document.getElementById('settings-panel');
+        const settingsToggle = document.getElementById('settings-toggle');
+        const hoverModeToggle = document.getElementById('hover-mode-toggle');
+        const trailsToggle = document.getElementById('trails-toggle');
+
+        // --- SETUP ---
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let ripples = [];
+        let interactionMode = 'click'; // 'click' or 'hover'
+        let showTrails = true;
+
+        const colors = ['#4ecca3', '#23b5d3', '#a16ae8', '#ff7b7b', '#f9ed69'];
+        const scale = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5'];
+
+        // --- TONE.JS SETUP ---
+        const panner = new Tone.Panner(0).toDestination();
+        const synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: 'sine' },
+            envelope: { attack: 0.1, decay: 0.2, sustain: 0.5, release: 1.5, }
+        }).connect(panner);
+        const reverb = new Tone.Reverb({ decay: 4, preDelay: 0.01 }).toDestination();
+        synth.connect(reverb);
+
+        // --- CORE LOGIC ---
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        function createRipple(x, y) {
+            // 1. Play a sound with spatial audio
+            const noteIndex = Math.floor(Math.random() * scale.length);
+            const baseNote = scale[noteIndex];
+            
+            // Pan sound based on X coordinate (-1 left, 1 right)
+            panner.pan.value = (x / width) * 2 - 1;
+            
+            // Slightly adjust pitch based on Y coordinate (higher pitch at the top)
+            const detune = (1 - (y / height)) * 100 - 50; // Range from -50 to +50 cents
+            synth.triggerAttackRelease(baseNote, '8n', Tone.now(), 1, detune);
+
+            // 2. Create a visual ripple
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            ripples.push({
+                x: x, y: y, color: color, radius: 5, alpha: 1,
+                maxWidth: 150 + Math.random() * 100
+            });
+        }
+
+        function animate() {
+            if (showTrails) {
+                ctx.fillStyle = 'rgba(26, 26, 46, 0.2)'; // Fading trail effect
+            } else {
+                ctx.fillStyle = '#1a1a2e'; // Solid background
+            }
+            ctx.fillRect(0, 0, width, height);
+
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const r = ripples[i];
+                r.radius += 1.5;
+                r.alpha -= 0.01;
+
+                if (r.alpha <= 0) {
+                    ripples.splice(i, 1);
+                    continue;
+                }
+
+                ctx.beginPath();
+                ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(${hexToRgb(r.color)}, ${r.alpha})`;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function hexToRgb(hex) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `${r}, ${g}, ${b}`;
+        }
+
+        async function startAudio() {
+            if (Tone.context.state !== 'running') {
+                await Tone.start();
+                console.log('AudioContext started!');
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        settingsToggle.addEventListener('click', () => {
+            settingsPanel.classList.toggle('open');
+        });
+
+        hoverModeToggle.addEventListener('change', (e) => {
+            interactionMode = e.target.checked ? 'hover' : 'click';
+        });
+
+        trailsToggle.addEventListener('change', (e) => {
+            showTrails = e.target.checked;
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        canvas.addEventListener('mousedown', async (e) => {
+            await startAudio();
+            if (interactionMode === 'click') {
+                createRipple(e.clientX, e.clientY);
+            }
+        });
+
+        canvas.addEventListener('touchstart', async (e) => {
+            await startAudio();
+            e.preventDefault();
+            if (interactionMode === 'click') {
+                const touch = e.touches[0];
+                createRipple(touch.clientX, touch.clientY);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (interactionMode === 'hover') {
+                createRipple(e.clientX, e.clientY);
+            }
+        });
+        
+        window.addEventListener('keydown', async (e) => {
+            // Use letters to trigger sounds, avoiding control keys
+            if (e.key.length === 1 && e.key.match(/[a-z]/i)) {
+                await startAudio();
+                // Create ripple at a random screen position
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                createRipple(x, y);
+            }
+        });
+
+        // --- INITIALIZATION ---
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>
